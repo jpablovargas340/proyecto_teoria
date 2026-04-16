@@ -5,6 +5,7 @@
 **Docente:** Javier Mauricio Sierra  
 
 ---
+Link Streamlit: (https://proyectoteoria-jljfbufsmpbpryrcsbxega.streamlit.app/)
 
 ## 1. Descripción general del proyecto
 
