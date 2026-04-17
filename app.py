@@ -104,6 +104,8 @@ if returns.empty or log_returns.empty:
 market_returns = pd.Series(dtype=float)
 if isinstance(market, pd.Series) and not market.empty:
     market_returns = np.log(market / market.shift(1)).dropna()
+elif "SPY" in log_returns.columns:
+    market_returns = log_returns["SPY"].dropna()
 
 optimizer_10k = simulate_portfolios(log_returns, macro["risk_free_rate"], n_portfolios=10_000)
 optimizer_5k = simulate_portfolios(log_returns, macro["risk_free_rate"], n_portfolios=5_000)
