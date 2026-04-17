@@ -206,22 +206,21 @@ with tabs[1]:
         key="macd_ch"
     )
 
-    c3, c4 = st.columns(2)
-    c3.plotly_chart(
+    st.plotly_chart(
         plot_stochastic(pack["stochastic_k"], pack["stochastic_d"]),
         use_container_width=True,
         key="stoch_ch"
     )
-    with c4:
-        st.markdown("##### Lectura de indicadores")
-        interp = indicator_interpretations(
-            pack,
-            prices[ticker].dropna().iloc[-1],
-            rsi_upper,
-            rsi_lower
-        )
-        for k, v in interp.items():
-            info_box(k, v)
+
+    st.markdown("##### Lectura de indicadores")
+    interp = indicator_interpretations(
+        pack,
+        prices[ticker].dropna().iloc[-1],
+        rsi_upper,
+        rsi_lower
+    )
+    for k, v in interp.items():
+        info_box(k, v)
 
 # ── TAB 2: RENDIMIENTOS ───────────────────────────
 with tabs[2]:

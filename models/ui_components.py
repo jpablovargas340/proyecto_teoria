@@ -31,6 +31,9 @@ CHART_THEME = dict(
     plot_bgcolor=C_SURFACE,
     font=dict(family="Inter, Segoe UI, sans-serif", color=C_TEXT, size=12),
     margin=dict(l=40, r=20, t=45, b=40),
+    legend_font_color=C_TEXT,
+    legend_title_font_color=C_TEXT,
+    legend_bgcolor="rgba(0,0,0,0)",
 )
 
 # ─────────────────────────────────────────────────────────────
@@ -307,18 +310,61 @@ def plot_macd(macd, signal, hist):
 
 
 def plot_stochastic(k, d):
+    # Mostrar solo la parte reciente para evitar saturación visual
+    k_plot = k.dropna().tail(120)
+    d_plot = d.dropna().tail(120)
+
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=k.index, y=k.values, name="%K",
-                             line=dict(color=C_ACCENT, width=2)))
-    fig.add_trace(go.Scatter(x=d.index, y=d.values, name="%D",
-                             line=dict(color=C_WARN, width=1.5, dash="dot")))
+
+    fig.add_trace(go.Scatter(
+        x=k_plot.index,
+        y=k_plot.values,
+        name="%K",
+        mode="lines",
+        line=dict(color=C_ACCENT, width=2)
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=d_plot.index,
+        y=d_plot.values,
+        name="%D",
+        mode="lines",
+        line=dict(color=C_WARN, width=1.8, dash="dot")
+    ))
+
     fig.add_hline(y=80, line_dash="dash", line_color=C_DANGER)
     fig.add_hline(y=20, line_dash="dash", line_color=C_ACCENT2)
+
     fig.add_hrect(y0=80, y1=100, fillcolor="rgba(248,81,73,0.05)", line_width=0)
     fig.add_hrect(y0=0, y1=20, fillcolor="rgba(63,185,80,0.05)", line_width=0)
-    fig.update_layout(**CHART_THEME, height=280, title="Oscilador Estocástico %K / %D")
-    return fig
 
+    fig.update_layout(
+        **CHART_THEME,
+        height=320,
+        title="Oscilador Estocástico %K / %D (últimos 120 datos)",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.03,
+            xanchor="right",
+            x=1,
+            font=dict(size=11, color=C_TEXT)
+        ),
+        yaxis=dict(
+            title="Nivel",
+            range=[0, 100],
+            tickvals=[0, 20, 40, 60, 80, 100],
+            gridcolor=C_BORDER,
+            tickfont=dict(color=C_TEXT),
+            title_font=dict(color=C_TEXT)
+        ),
+        xaxis=dict(
+            showgrid=False,
+            tickfont=dict(color=C_TEXT)
+        )
+    )
+
+    return fig
 
 def plot_histogram(returns):
     fig = go.Figure()
