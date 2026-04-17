@@ -9,6 +9,27 @@ DEFAULT_TICKERS = ["AAPL", "MSFT", "AMZN", "GOOGL", "SPY"]
 MARKET_INDEX = "^GSPC"
 DEFAULT_START_DATE = (datetime.today() - timedelta(days=2 * 365)).strftime("%Y-%m-%d")
 
+def _extract_close(data) -> pd.Series:
+    if data is None or len(data) == 0:
+        return pd.Series(dtype=float)
+
+    if isinstance(data, pd.Series):
+        return pd.to_numeric(data, errors="coerce").dropna()
+
+    df = data.copy()
+
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+
+    if "Close" not in df.columns:
+        return pd.Series(dtype=float)
+
+    close = df["Close"]
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]
+
+    return pd.to_numeric(close, errors="coerce").dropna()
+
 @st.cache_data(ttl=3600)
 def get_market_data(tickers=None, start_date: str = DEFAULT_START_DATE, end_date: str | None = None):
     try:
@@ -36,9 +57,11 @@ def get_market_data(tickers=None, start_date: str = DEFAULT_START_DATE, end_date
                 auto_adjust=True,
                 progress=False,
                 threads=False,
+                multi_level_index=False,
             )
-            if not df.empty and "Close" in df.columns:
-                prices[ticker.upper()] = df["Close"]
+            close = _extract_close(df)
+            if not close.empty:
+                prices[ticker.upper()] = close
         except Exception:
             continue
 
@@ -50,10 +73,14 @@ def get_market_data(tickers=None, start_date: str = DEFAULT_START_DATE, end_date
             auto_adjust=True,
             progress=False,
             threads=False,
+            multi_level_index=False,
         )
-        market = market_raw["Close"] if not market_raw.empty and "Close" in market_raw.columns else pd.Series(dtype=float)
+        market = _extract_close(market_raw)
     except Exception:
         market = pd.Series(dtype=float)
+
+    if market.empty and "SPY" in prices.columns:
+        market = prices["SPY"].dropna().copy()
 
     return prices.dropna(how="all"), market.dropna()
 

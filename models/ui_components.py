@@ -390,7 +390,7 @@ def plot_capm_scatter(df, ticker, beta):
                              line=dict(color=C_DANGER, width=2.5)))
     fig.update_layout(**CHART_THEME, height=420,
                       title=f"CAPM — {ticker}",
-                      xaxis_title="Rendimiento mercado (SPY)",
+                      xaxis_title="Rendimiento del benchmark de mercado",
                       yaxis_title=f"Rendimiento {ticker}")
     return fig
 
