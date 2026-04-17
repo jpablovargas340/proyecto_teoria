@@ -471,19 +471,32 @@ with tabs[7]:
     else:
         default_w = {a: round(1.0 / n_assets, 4) for a in assets}
 
+    # Detectar cambio de modo y actualizar sliders
+    if "prev_weight_mode" not in st.session_state:
+        st.session_state.prev_weight_mode = mode
+
+    if mode != st.session_state.prev_weight_mode:
+        for asset in assets:
+            st.session_state[f"w_{asset}"] = float(default_w.get(asset, 1.0 / n_assets))
+        st.session_state.prev_weight_mode = mode
+
     st.markdown("#### Asignación de pesos")
     st.caption("ℹ️ Los pesos se normalizan automáticamente para sumar 100%.")
 
     raw_weights = {}
     cols_sliders = st.columns(min(n_assets, 4))
+
     for i, asset in enumerate(assets):
         col = cols_sliders[i % len(cols_sliders)]
         with col:
+            # Inicializar si aún no existe
+            if f"w_{asset}" not in st.session_state:
+                st.session_state[f"w_{asset}"] = float(default_w.get(asset, 1.0 / n_assets))
+
             raw_weights[asset] = st.slider(
                 asset,
                 min_value=0.0,
                 max_value=1.0,
-                value=float(default_w.get(asset, 1.0 / n_assets)),
                 step=0.01,
                 key=f"w_{asset}",
                 format="%.2f",
